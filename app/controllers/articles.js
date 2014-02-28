@@ -1,100 +1,146 @@
 'use strict';
 
-/**
- * Module dependencies.
- */
 var mongoose = require('mongoose'),
-    Article = mongoose.model('Article'),
-    _ = require('lodash');
+  Article = mongoose.model('Article'),
+  _ = require('lodash');
 
 
-/**
- * Find article by id
- */
 exports.article = function(req, res, next, id) {
-    Article.load(id, function(err, article) {
-        if (err) return next(err);
-        if (!article) return next(new Error('Failed to load article ' + id));
-        req.article = article;
-        next();
-    });
+  Article.load(id, function(err, article) {
+    if (err) return next(err);
+    if (!article) return next(new Error('Failed to load article ' + id));
+    req.article = article;
+    next();
+  });
 };
 
-/**
- * Create an article
- */
+
 exports.create = function(req, res) {
-    var article = new Article(req.body);
-    article.user = req.user;
+  var article = new Article(req.body);
+  article.user = req.user;
 
-    article.save(function(err) {
-        if (err) {
-            return res.send('users/signup', {
-                errors: err.errors,
-                article: article
-            });
-        } else {
-            res.jsonp(article);
-        }
-    });
+  article.save(function(err) {
+    if (err) {
+      return res.send('users/signup', {
+        errors: err.errors,
+        article: article
+      });
+    } else {
+      res.jsonp(article);
+    }
+  });
 };
 
-/**
- * Update an article
- */
+
 exports.update = function(req, res) {
-    var article = req.article;
+  var article = req.article;
 
-    article = _.extend(article, req.body);
+  article = _.extend(article, req.body);
 
-    article.save(function(err) {
-        if (err) {
-            return res.send('users/signup', {
-                errors: err.errors,
-                article: article
-            });
-        } else {
-            res.jsonp(article);
-        }
-    });
+  article.save(function(err) {
+    if (err) {
+      return res.send('users/signup', {
+        errors: err.errors,
+        article: article
+      });
+    } else {
+      res.jsonp(article);
+    }
+  });
 };
 
-/**
- * Delete an article
- */
+
 exports.destroy = function(req, res) {
-    var article = req.article;
+  var article = req.article;
 
-    article.remove(function(err) {
-        if (err) {
-            return res.send('users/signup', {
-                errors: err.errors,
-                article: article
-            });
-        } else {
-            res.jsonp(article);
-        }
-    });
+  article.remove(function(err) {
+    if (err) {
+      return res.send('users/signup', {
+        errors: err.errors,
+        article: article
+      });
+    } else {
+      res.jsonp(article);
+    }
+  });
 };
 
-/**
- * Show an article
- */
+
 exports.show = function(req, res) {
-    res.jsonp(req.article);
+  res.jsonp(req.article);
 };
 
-/**
- * List of Articles
+
+exports.all = function(req, res, next) {
+  var userId = req.query.userid;
+
+  var filter = {};
+  if (userId) {
+    filter = {
+      user: userId
+    };
+  }
+  Article.find(filter).sort('-created').populate('user', 'name username').exec(function(err, articles) {
+    if (err) return next(err);
+    res.jsonp(articles);
+  });
+};
+
+
+exports.my = function(req, res, next) {
+  Article.find({
+    user: req.user
+  }).sort('-created').exec(function(err, articles) {
+    if (err) return next(err);
+    res.jsonp(articles);
+  });
+};
+
+
+exports.hot = function(req, res, next) {
+  Article.find({
+    user: req.user
+  }).sort('-created').exec(function(err, articles) {
+    if (err) return next(err);
+    res.jsonp(articles);
+  });
+};
+
+
+/*
+ * tags
  */
-exports.all = function(req, res) {
-    Article.find().sort('-created').populate('user', 'name username').exec(function(err, articles) {
-        if (err) {
-            res.render('error', {
-                status: 500
-            });
-        } else {
-            res.jsonp(articles);
-        }
+
+exports.tags = function(req, res, next) {
+  var userId = req.query.userid;
+
+  var filter = {};
+  if (userId) {
+    filter = {
+      user: userId
+    };
+  }
+  Article.find(filter).distinct('tags').exec(function(err, tags) {
+    if (err) return next(err);
+    res.jsonp(tags);
+  });
+};
+
+
+exports.listByTag = function(req, res, next) {
+  var tag = req.params.tag;
+  var filter = {
+    tags: tag
+  };
+
+  var userId = req.query.userid;
+  if (userId) {
+    _.extend(filter, {
+      user: userId
     });
+  }
+  Article.find(filter).sort('-created').populate('user', 'name username').exec(function(err, articles) {
+    if (err) return next(err);
+    res.jsonp(articles);
+  });
 };

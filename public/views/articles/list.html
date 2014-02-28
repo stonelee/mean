@@ -1,11 +1,13 @@
-<section data-ng-controller="ArticlesController" data-ng-init="find()">
-	<ul class="articles unstyled">
-		<li data-ng-repeat="article in articles">
-			<span>{{article.created | date:'medium'}}</span> /
-			<span>{{article.user.name}}</span>
-			<h2><a data-ng-href="#!/articles/{{article._id}}">{{article.title}}</a></h2>
-			<div>{{article.content}}</div>
-		</li>
-	</ul>
-	<h1 data-ng-hide="!articles || articles.length">No articles yet. <br> Why don't you <a href="/#!/articles/create">Create One</a>?</h1>
+<section ng-controller="ArticlesController">
+  <ul class="articles list-unstyled">
+    <li ng-repeat="article in articles">
+      <!--use dl dt dd-->
+      <h2><a ng-href="#!/articles/{{article._id}}">{{article.title}}</a></h2>
+      <span>{{article.created | date:'yyyy-MM-dd HH:mm:ss'}}</span> by
+      <a ui-sref="home.user({userId:article.user._id})">{{article.user.name}}</a>
+      <p ng-show="article.tags">tags: <a ng-repeat="tag in article.tags" ui-sref="home.list.tag({tag:tag})">{{tag}}</a></p>
+      <div>{{article.content}}</div>
+    </li>
+  </ul>
+  <h1 ng-hide="!articles || articles.length">No articles yet. <br> Why don't you <a href="/#!/articles/create">Create One</a>?</h1>
 </section>

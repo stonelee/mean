@@ -1,3 +1,8 @@
-<section data-ng-controller="IndexController">
-	<h1>This is the home view</h1>
-</section>
+<h2 ui-view="title"></h2>
+<row>
+  <div class="col-md-8" ui-view></div>
+  <div class="col-md-3 col-md-offset-1">
+    <section ui-view="users"></section>
+    <section ui-view="tags"></section>
+  </div>
+</row>
